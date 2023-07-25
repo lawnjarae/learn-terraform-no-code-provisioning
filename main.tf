@@ -67,7 +67,7 @@ resource "random_pet" "random" {
 resource "aws_db_instance" "education" {
   identifier             = "${var.db_name}-${random_pet.random.id}"
   instance_class         = "db.t3.micro"
-  allocated_storage      = 5
+  allocated_storage      = 1
   engine                 = "postgres"
   engine_version         = "14.1"
   username               = var.db_username
@@ -75,6 +75,6 @@ resource "aws_db_instance" "education" {
   db_subnet_group_name   = aws_db_subnet_group.education.name
   vpc_security_group_ids = [aws_security_group.rds.id]
   parameter_group_name   = aws_db_parameter_group.education.name
-  publicly_accessible    = true
+  publicly_accessible    = false
   skip_final_snapshot    = true
 }
