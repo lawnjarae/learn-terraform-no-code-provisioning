@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "us-east-2"
+  region = "us-west-2"
 }
 
 data "aws_availability_zones" "available" {}
@@ -8,7 +8,7 @@ module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "2.77.0"
 
-  name                 = "education"
+  name                 = "demo"
   cidr                 = "10.0.0.0/16"
   azs                  = data.aws_availability_zones.available.names
   public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
@@ -16,17 +16,17 @@ module "vpc" {
   enable_dns_support   = true
 }
 
-resource "aws_db_subnet_group" "education" {
-  name       = "education"
+resource "aws_db_subnet_group" "demo" {
+  name       = "demo"
   subnet_ids = module.vpc.public_subnets
 
   tags = {
-    Name = "Education"
+    Name = "Demo"
   }
 }
 
 resource "aws_security_group" "rds" {
-  name   = "education_rds"
+  name   = "demo_rds"
   vpc_id = module.vpc.vpc_id
 
   ingress {
@@ -44,13 +44,13 @@ resource "aws_security_group" "rds" {
   }
 
   tags = {
-    Name = "education_rds"
+    Name = "demo_rds"
   }
 }
 
-resource "aws_db_parameter_group" "education" {
-  name   = "education"
-  family = "postgres14"
+resource "aws_db_parameter_group" "demo" {
+  name   = "demo"
+  family = "postgres15"
 
   parameter {
     name  = "log_connections"
@@ -58,23 +58,23 @@ resource "aws_db_parameter_group" "education" {
   }
 }
 
-provider "random" {}
+# provider "random" {}
 
-resource "random_pet" "random" {
-  length = 1
-}
+# resource "random_pet" "random" {
+#   length = 1
+# }
 
-resource "aws_db_instance" "education" {
-  identifier             = "${var.db_name}-${random_pet.random.id}"
+resource "aws_db_instance" "demo" {
+  # identifier             = "${var.db_name}-${random_pet.random.id}"
   instance_class         = "db.t3.micro"
-  allocated_storage      = 1
+  allocated_storage      = 50
   engine                 = "postgres"
-  engine_version         = "14.1"
+  engine_version         = "15.3"
   username               = var.db_username
   password               = var.db_password
-  db_subnet_group_name   = aws_db_subnet_group.education.name
+  db_subnet_group_name   = aws_db_subnet_group.demo.name
   vpc_security_group_ids = [aws_security_group.rds.id]
-  parameter_group_name   = aws_db_parameter_group.education.name
+  parameter_group_name   = aws_db_parameter_group.demo.name
   publicly_accessible    = false
   skip_final_snapshot    = true
 }
